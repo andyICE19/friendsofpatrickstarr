@@ -1,0 +1,24 @@
+{
+"descriptor" : [ "long_name" ],
+"no_of_cdes_to_keep" : 5000,
+                  
+"fasttext" : {
+              "window" : 10,
+			  "min_count" : 1,
+			  "epochs" : 500,
+			  "vector_size" : 50
+             },
+"model" :    {
+             "name" : "unsupervised knn" ,
+			 "model_params" : {
+			                   "n_neighbors" : 20,
+							   "algorithm" : "brute",
+							   "metric" : "cosine"
+							  							   
+			                  }
+
+             }
+
+}
+
+

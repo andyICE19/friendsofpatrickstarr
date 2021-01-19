@@ -1,0 +1,39 @@
+{
+"descriptor" : [ "long_name" ],
+"no_of_cdes_to_keep" : 5000,
+                  
+"fasttext" : {
+              "window" : 20,
+			  "min_count" : 1,
+			  "epochs" : 500,
+			  "vector_size" : 50
+             },
+
+"features":  { "differences" : {
+								"type" : "standard"
+							   },
+				"metrics": {
+				                "metric" : "euclidean",
+								"sim_type" : "kernel",
+								"scaling" : 2
+								
+				                },
+								
+				"sampling_ratio": 5
+			   
+             },
+
+"model" :    {
+             "name" : "gradient boost" ,
+			 "model_params" : {
+			                   "n_estimators" : 125,
+							   "max_depth" : 4,
+							   "random_state" : 2,
+							   "min_samples_split" : 5							   
+			                  }
+
+             }
+
+}
+
+
