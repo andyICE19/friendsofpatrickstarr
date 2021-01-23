@@ -146,8 +146,6 @@ class CDE_data_modeller:
 
         '''
         
-
-        
         # Step2: Create the training corpus
         self.create_training_corpus()
         
