@@ -245,13 +245,33 @@ class TCGA_data_processor:
     
         for c in df.columns:
             values = list(df[c].unique())
-            
-            data_type = ''
+
+            #--- Section added by Sher Lynn-----
+            # Drop these values to correctly tag numbers and strings
+            try:
+                values.remove('[Not Available]')
+                values.remove('[Not Applicable]')
+                values.remove('[Not Evaluated]')
+                values.remove('not_available')
+                values.remove('not_applicable')
+                values.remove('not_evaluated')
+            except:
+                values
+
+            #Section end-----------------------
             
             if self.check_if_numeric(values):
                 
                 data_type = 'number'
-                
+
+            #--- Section added by Sher Lynn-----
+
+            elif self.check_if_yesno(values):
+
+                data_type = 'boolean'
+
+            #Section end-----------------------
+
             else:
                 
                 data_type = 'string'
@@ -259,8 +279,29 @@ class TCGA_data_processor:
             headers_data_type.loc[c] = data_type
     
         return headers_data_type.reset_index()
-    
-    
+
+    #--- Section added by Sher Lynn-----
+    def check_if_yesno(self,values):
+        '''
+        Checks if a column contains yes no values
+        
+        Parameters
+        ---------
+        values: Series
+            Data column that needs to be checked
+
+        Returns
+        --------
+        bool
+            if yes and no exists, return True
+        '''
+        if "yes" in values.str.lower().values: #convert series into an array of lower cased string
+            return True
+        elif "no" in values.str.lower().values:
+            return True
+
+    #---- Section end-----------------------
+
     def check_if_numeric(self,values):
         '''
         Checks if a column is numeric
@@ -276,7 +317,7 @@ class TCGA_data_processor:
             DESCRIPTION.
 
         '''
-        
+
         for v in values:
             try:
                 float(v)
