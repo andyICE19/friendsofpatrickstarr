@@ -22,7 +22,6 @@ from collections import defaultdict
 import re
 from os import listdir
 from cde_modelling.utils import Preprocessing as prs
-import numpy as np
 
 
 
@@ -115,14 +114,11 @@ class TCGA_data_processor:
                         # don't create value list for bcr_patient_barcode column and continuous variable. 
                         # bcr_patient_barcode column has unique value in each row and are barcode numbers which cant be 
                         # semantically defined. Similarly, continuous variables are numbers and can't be semantically defined
-
-                        #---- added by Sher Lynn
-                        #noise_values = ['[Not Available]','[Not Applicable]','[Not Evaluated]','[Discrepancy]','[Unknown]']
-                        #----------
+                        
+                        
                         if (c!= 'bcr_patient_barcode') and (len(vals) < 0.9*df.shape[0]): 
                             
                             for v in vals:
-                                #if v not in noise_values: #line added by Sher Lynn
                                 self.clinical_value_list[c].update(prs.preprocess(v))
                     
                     # identify value type (string or number)
@@ -139,38 +135,16 @@ class TCGA_data_processor:
         
         
         # convert to Dummy variables
-        self.clinical_value_info.drop_duplicates(inplace = True) # drop true duplicates
-        #drop when data type is unknown
-        # section modified by Sher Lynn
-        self.clinical_value_info['data_type'].replace('', np.nan, inplace = True)
-        self.clinical_value_info.dropna(subset = ['data_type'], inplace = True)
-        
-        #pivot table
+        self.clinical_value_info.drop_duplicates(inplace = True)       
         self.clinical_value_info = pd.get_dummies ( self.clinical_value_info, columns = ['data_type']).set_index('public_id')
-        self.clinical_value_info = self.clinical_value_info.sort_values(by=['public_id','data_type_boolean','data_type_number','data_type_string'], 
-                                                                        ascending=[True,False,False,False]) 
-        # section end
-        self.clinical_value_info = self.clinical_value_info.groupby(self.clinical_value_info.index).first() # delete string if it's both a string and a number
-        # if self.clinical_value_info.shape[1]==1:
-        #     col = self.clinical_value_info.columns[0]
-        #     # ---- section modified by Sher Lynn
-        #     if 'string' in col:
-        #         self.clinical_value_info['data_type_number'] = 0
-        #         self.clinical_value_info['data_type_string'] = 1
-        #         self.clinical_value_info['data_type_boolean'] = 0
-            
-        #     #else:
-        #     elif 'boolean' in col:
-        #         self.clinical_value_info['data_type_string'] = 0
-        #         self.clinical_value_info['data_type_number'] = 0
-        #         self.clinical_value_info['data_type_boolean'] = 1
-            
-        #     else:
-        #         self.clinical_value_info['data_type_string'] = 0
-        #         self.clinical_value_info['data_type_number'] = 1
-        #         self.clinical_value_info['data_type_boolean'] = 0
-
-        #     ## -- Section end
+        
+        if self.clinical_value_info.shape[1]==1:
+            col = self.clinical_value_info.columns[0]
+            if 'string' in col:
+                self.clinical_value_info['data_type_number'] = 0
+            else:
+                self.clinical_value_info['data_type_string'] = 0
+                
             
         
         #self.clinical_value_list= { item[0] : [ prs.preprocess(v) for v in item[1] ] for item in self.clinical_value_list.items() }
@@ -271,67 +245,22 @@ class TCGA_data_processor:
     
         for c in df.columns:
             values = list(df[c].unique())
-
-            ## Section added by Sher Lynn
-
-            noise_values = ['[Not Available]','[Not Applicable]','[Not Evaluated]','[Discrepancy]','[Unknown]','[Completed]','|',',']
             
-            #Remove values such as '[Not Available]|[Not Available]|[Not Available]|9.5'
-            for value in values[:]:
-                if any(noise_value in value for noise_value in noise_values):
-                    values.remove(value)
+            data_type = ''
             
-
-            #values = [v for v in values if v not in noise_values]
-            if values == []: #If no value available just skip
-                continue
-
-            # Section end -----------------
-
             if self.check_if_numeric(values):
-                    
+                
                 data_type = 'number'
-
-            #--- Section added by Sher Lynn-----
-
-            elif self.check_if_yesno(values):
-
-                data_type = 'boolean'
-
-            #Section end-----------------------
-
+                
             else:
-                    
+                
                 data_type = 'string'
             
             headers_data_type.loc[c] = data_type
     
         return headers_data_type.reset_index()
-
-    #--- Section added by Sher Lynn-----
-    def check_if_yesno(self,values):
-        '''
-        Checks if a column contains yes no values
-        
-        Parameters
-        ---------
-        values: Series
-            Data column that needs to be checked
-
-        Returns
-        --------
-        bool
-            if yes and no exists, return True
-        '''
-        if "YES" in values: #convert series into an array of lower cased string
-            return True
-        elif "NO" in values:
-            return True
-        else:
-            return False
-
-    #---- Section end-----------------------
-
+    
+    
     def check_if_numeric(self,values):
         '''
         Checks if a column is numeric
@@ -347,7 +276,7 @@ class TCGA_data_processor:
             DESCRIPTION.
 
         '''
-
+        
         for v in values:
             try:
                 float(v)

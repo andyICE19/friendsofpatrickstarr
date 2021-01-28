@@ -3,7 +3,7 @@
 "no_of_cdes_to_keep" : 5000,
                   
 "fasttext" : {
-              "window" : 10,
+              "window" : 20,
 			  "min_count" : 1,
 			  "epochs" : 500,
 			  "vector_size" : 50

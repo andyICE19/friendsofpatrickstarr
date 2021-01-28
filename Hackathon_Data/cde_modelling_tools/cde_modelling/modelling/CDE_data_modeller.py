@@ -146,6 +146,8 @@ class CDE_data_modeller:
 
         '''
         
+
+        
         # Step2: Create the training corpus
         self.create_training_corpus()
         
@@ -791,7 +793,6 @@ class CDE_data_modeller:
             #we are not using the following at the moment, the definition of boolean is not clear to me
             #check_boolean = lambda x : x in boolean if 'java' not in x else x.split(sep = '.')[2] in boolean
             
-
             simple_type = 'string'
             
              # 1. if the CDE  element contains a list of permissible values, we check if the values are number or strings
@@ -802,15 +803,11 @@ class CDE_data_modeller:
             if len(permissible_values)>0:
                 if self.check_if_numeric (permissible_values):
                     return 'number'
-
-                #--- section added by Sher Lynn
-                if self.check_yes_no(permissible_values):
-                    return 'boolean'
-                #java.lang.Boolean to be marked as string.
-                #--- section end
-
+            
             # 2. if there are no permissible values, then we look at the data_types of the CDE element. All numeric data types e.g. 
-            #     integer, long, double, float etc. a grouped together as number. everything else is string    
+            #     integer, long, double, float etc. a grouped together as number. everything else is string
+                
+                
             if check_number ( data_type ):
                 simple_type = 'number'
                 
@@ -819,37 +816,9 @@ class CDE_data_modeller:
             #     simple_type = 'boolean'
             
             return simple_type
-
-        # --- Section added by Sher Lynn
-        def check_yes_no(self, values):
-            '''
-            In the event that the CDE elements have a list of values, we check if the values are "Yes", "No"
-            
-            Parameters
-            --------------
-            values: iterable
-
-            Returns
-            --------------
-            bool
-                True if and only if valid value list has both "Yes" and "No" Options. Examples of acceptable ones:
-                    - "Yes", "No", "NA"
-                    - "Yes", "No", "Unknown" 
-                    - "yes", "no", "not done"
-                    - "yes", "no", "unknown", "inadequate sample"
-                False otherwise, for example
-                    if options include "Yes, <explanation>" or "No, <explanation>"
-
-            '''
-            if "yes" in values and "no" in values:
-                return True
-            
-            elif "Yes" in values and "No" in values:
-                return True
-            else:
-                return False
-
-        # --- Section end
+        
+        
+        
         
         def check_if_numeric(self, values):
             '''
@@ -863,31 +832,17 @@ class CDE_data_modeller:
             Returns
             -------
             bool
-                True if all values are numeric
-                True if all values except one are numeric
-                Else False
-
+                True if all values are numeric else flase.
 
             '''
-            #--- Section modified by Sher Lynn ---
-             # if all is number, except one field, it should be numeric
-            
-            ind = {}
-
+    
             for v in values:
                 try:
                     float(v)
-                    ind[v] = True
                 except:
-                    ind[v] = False
-
-            if all(i == 1 for i in ind.values()): # If all True
-                return True
-            elif sum(i == 0 for i in ind.values()) == 1: # If there is only one False
-                return True
-            else: #If there is more than one False.
-                return False
-            #---- Section end
+                    return False
+            return True
+        
         
         def value_list(self, values ):    
                 
