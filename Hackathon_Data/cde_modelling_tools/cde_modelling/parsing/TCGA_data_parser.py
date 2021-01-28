@@ -141,16 +141,16 @@ class TCGA_data_processor:
         # convert to Dummy variables
         self.clinical_value_info.drop_duplicates(inplace = True) # drop true duplicates
         #drop when data type is unknown
-        # section added by Sher Lynn
+        # section modified by Sher Lynn
         self.clinical_value_info['data_type'].replace('', np.nan, inplace = True)
         self.clinical_value_info.dropna(subset = ['data_type'], inplace = True)
-        # section end
+        
         #pivot table
         self.clinical_value_info = pd.get_dummies ( self.clinical_value_info, columns = ['data_type']).set_index('public_id')
         self.clinical_value_info = self.clinical_value_info.sort_values(by=['public_id','data_type_boolean','data_type_number','data_type_string'], 
-                                                                        ascending=[True,False,False,False])
-
-        self.clinical_value_info = self.clinical_value_info.groupby(self.clinical_value_info.index).first()
+                                                                        ascending=[True,False,False,False]) 
+        # section end
+        self.clinical_value_info = self.clinical_value_info.groupby(self.clinical_value_info.index).first() # delete string if it's both a string and a number
         # if self.clinical_value_info.shape[1]==1:
         #     col = self.clinical_value_info.columns[0]
         #     # ---- section modified by Sher Lynn
@@ -282,8 +282,7 @@ class TCGA_data_processor:
                     values.remove(value)
             
 
-            values = [v for v in values if v not in noise_values]
-
+            #values = [v for v in values if v not in noise_values]
             if values == []: #If no value available just skip
                 continue
 
