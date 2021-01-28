@@ -595,6 +595,7 @@ class CDE_data_modeller:
             self.cde_value_types = pd.get_dummies(self.cde_value_types, columns = ['data_type']).set_index('public_id')
             
             self.cde_value_types.index = self.cde_value_types.index.astype(np.int64)
+
             return self.cde_value_types
 
     
