@@ -12,8 +12,11 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
 from sklearn import metrics
+import xgboost as xgb
+from xgboost.sklearn import XGBClassifier
 
-class Model:   
+
+class Model:
     ''' 
     Wrapper class for creating ml-models
     '''
@@ -37,7 +40,7 @@ class Model:
         
         # Create classification models depending on parameters
         if params['model']['name'] =='gradient boost':
-            
+
             self.model = GradientBoostingClassifier(**params['model']['model_params'])
             
         elif params['model']['name'] =='random forest':
@@ -45,7 +48,11 @@ class Model:
             
         elif params['model']['name'] =='logistic regression':
             self.model = LogisticRegression(**params['model']['model_params'])
-            
+
+        elif params['model']['name'] == 'XGBoost':
+            print("XGBoost")
+            self.model = xgb.XGBClassifier(**params['model']['model_params'])
+
         elif params['model']['name'] =='knn classifier':
             self.model = KNeighborsClassifier(**params['model']['model_params'])
         
