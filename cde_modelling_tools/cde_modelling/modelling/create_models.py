@@ -13,7 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
 from sklearn import metrics
 
-class Model:   
+class Model:
     ''' 
     Wrapper class for creating ml-models
     '''
@@ -21,23 +21,20 @@ class Model:
     def __init__(self,params):
         '''
         Class constructor
-
         Parameters
         ----------
         params : dictionary
             type and parameters of the model
-
         Returns
         -------
         None.
-
         '''
         self.params = params
         self.model = []
         
         # Create classification models depending on parameters
         if params['model']['name'] =='gradient boost':
-            
+
             self.model = GradientBoostingClassifier(**params['model']['model_params'])
             
         elif params['model']['name'] =='random forest':
@@ -45,7 +42,11 @@ class Model:
             
         elif params['model']['name'] =='logistic regression':
             self.model = LogisticRegression(**params['model']['model_params'])
-            
+
+        elif params['model']['name'] == 'XGBoost':
+            print("XGBoost")
+            self.model = xgb.XGBClassifier(**params['model']['model_params'])
+
         elif params['model']['name'] =='knn classifier':
             self.model = KNeighborsClassifier(**params['model']['model_params'])
         
@@ -104,12 +105,13 @@ class Model:
             y_pred_proba = self.predict(X)
             
             accuracy_vals ['accuracy'] = metrics.accuracy_score(y_true, y_pred)
+            accuracy_vals ['balanced_accuracy'] = metrics.balanced_accuracy_score(y_true, y_pred)
             accuracy_vals ['f1'] = metrics.f1_score(y_true, y_pred)
             accuracy_vals ['precision'] = metrics.precision_score(y_true, y_pred)
             accuracy_vals ['recall'] = metrics.recall_score(y_true, y_pred)
             accuracy_vals ['auroc'] = metrics.roc_auc_score(y_true, y_pred_proba[:,1])
-            accuracy_vals ['confusion_matrix'] = metrics.confusion_matrix(y_true, y_pred)
-            accuracy_vals ['matthews'] = metrics.matthews_corrcoef(y_true, y_pred)
+            #accuracy_vals ['confusion_matrix'] = metrics.confusion_matrix(y_true, y_pred)
+            #accuracy_vals ['matthews'] = metrics.matthews_corrcoef(y_true, y_pred)
             
             return accuracy_vals
             
