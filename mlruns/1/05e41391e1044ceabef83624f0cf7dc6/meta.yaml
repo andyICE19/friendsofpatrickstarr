@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/haokunli/Desktop/hack/friendsofpatrickstarr/mlruns/1/05e41391e1044ceabef83624f0cf7dc6/artifacts
+end_time: 1611948407202
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: 05e41391e1044ceabef83624f0cf7dc6
+run_uuid: 05e41391e1044ceabef83624f0cf7dc6
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1611948407130
+status: 3
+tags: []
+user_id: haokunli
