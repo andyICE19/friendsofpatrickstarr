@@ -1,0 +1,4 @@
+artifact_location: file:///Users/haokunli/Desktop/hack/friendsofpatrickstarr/mlruns/3
+experiment_id: '3'
+lifecycle_stage: active
+name: Compare ML Models

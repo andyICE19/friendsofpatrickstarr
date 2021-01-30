@@ -12,6 +12,7 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import NearestNeighbors, KNeighborsClassifier
 from sklearn import metrics
+import xgboost as xgb
 
 class Model:
     ''' 

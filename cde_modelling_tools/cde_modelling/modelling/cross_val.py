@@ -11,10 +11,16 @@ To Include Cross Validation
 from cde_modelling.modelling.create_models import Model
 
 # stratified k-fold cross validation evaluation of xgboost model
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import cross_validate
 from sklearn.model_selection import GridSearchCV
+import mlflow
+import pickle
+import glob
+import json
+import pandas as pd
+from cde_modelling.utils import Accuracy_calculations as ac
 
 def log_result_for_gridsearch(params, gs_clf):
     
@@ -70,9 +76,9 @@ def log_result_for_gridsearch(params, gs_clf):
             #mlflow.log_param("features_samplinf_ratio", params["features"]["sampling_ratio"])
             
             #mlflow.log_param("model_type", params['model']["name"])
-            
-            for k in results['params'].keys():
-                mlflow.log_param("model_params_"+k, results['params'][k])
+
+            for k in cvparams.keys():
+                mlflow.log_param("model_params_"+k, cvparams[k])
             
             # log metrics
                 
@@ -81,16 +87,15 @@ def log_result_for_gridsearch(params, gs_clf):
                 mlflow.log_metric("std_val_accuracy_"+k,accuracy['std'][k])
             
             #mlflow.sklearn.logmodel()
-            with open('models/'+run_uuid+'.pkl','wb') as file:
-                pickle.dump(model, file)
-            
+            # with open('models/'+run_uuid+'.pkl','wb') as file:
+            #     pickle.dump(model, file)
+            #
             mlflow.end_run()
 
-            return accuracy
 
 
 def prep_ml(params, abt, clf="gradient boost", model_params={'n_estimators': 125}, test_size=0.2, 
-            random_state=42, cv=False):
+            random_state=42, cv=False, gridsearch=False):
     
     # First create feature vectors
     features = [c for c in abt.columns if ('feature' in c) or ('metric' in c)]
@@ -122,7 +127,7 @@ def prep_ml(params, abt, clf="gradient boost", model_params={'n_estimators': 125
         
         print(accuracy)
         
-        return model
+        return model, accuracy
         
     elif not(gridsearch):
 
@@ -178,13 +183,18 @@ def prep_ml(params, abt, clf="gradient boost", model_params={'n_estimators': 125
                            refit='f1', verbose=3, n_jobs=-1)
         
         clf.fit(X,y)
+
+        # return the Model object of model with the best set of parameter
+        params["model"]["model_params"] = clf.best_params_
+        best_model = Model(params)
+        best_model.fit(X, y)
         
         log_result_for_gridsearch(params, clf) #logs results in mlflow under experiment 'Parameter Tuning'
 
-        return clf.best_estimator_, clf.best_score_, clf.best_params_ #returns the best model, the best score for the model (in this case f1 score), and model name
+        return best_model, clf.best_score_, clf.best_params_ #returns the best model, the best score for the model (in this case f1 score), and model name
 
 
-def make_predictions(model, val_accuracy, clf, params, test_abt_no_target, K, index_cols, header_col, id_col,json_output=False,accuracy_and_mlflow_output=True):
+def make_predictions(model, val_accuracy, clf, params, test_abt_no_target, K, index_cols, header_col, id_col, clinical_data_test_dir, json_output=False,accuracy_and_mlflow_output=True):
     '''
     Parameters: 
     model
@@ -206,6 +216,7 @@ def make_predictions(model, val_accuracy, clf, params, test_abt_no_target, K, in
 
     test_gs_dict ={}
 
+    # print the ground truth of the datasets
     for filename in all_files:
         df = pd.read_csv(filename, index_col = 0, header = 0, sep='\t')
         
@@ -218,9 +229,11 @@ def make_predictions(model, val_accuracy, clf, params, test_abt_no_target, K, in
 
     # remove empty header if any
     #test_gs_dict = {key:val for key, val in test_dict.items() if val != ''}
+
+    # Output the top K predictions in a json file
     if json_output:
         with open("finalpredictions.json","w") as outfile:
-            json.dump(test_gs_dict, outfile)
+            json.dump(results, outfile)
 
     if accuracy_and_mlflow_output:
         test_accuracy = ac.calculate_accuracy(test_gs_dict,results)
@@ -263,7 +276,7 @@ def make_predictions(model, val_accuracy, clf, params, test_abt_no_target, K, in
             
             #mlflow.sklearn.logmodel()
             with open('models/'+run_uuid+'.pkl','wb') as file:
-                pickle.dump(model, file)
+                pickle.dump(model.model, file)
             
             mlflow.end_run()
 
