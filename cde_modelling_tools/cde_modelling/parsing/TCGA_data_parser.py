@@ -89,11 +89,11 @@ class TCGA_data_processor:
                     
                     # read the file into a dataframe
                     
-                    df = pd.read_csv( file , index_col = 0 , header = 0, sep='\t')
-                    
+                    #df = pd.read_csv( file , index_col = 0 , header = 0, sep='\t')
+                
                     # if parsing training data we need to extract the CDE_IDs for each header, this is done in the following code
                     if gold_standard_flag:
-                        
+                        df = pd.read_csv( file , index_col = 0 , header = 0, sep='\t')
                         self.all_headers.update( df.loc ['CDE_ID:',:].apply(lambda x: x.replace('CDE_ID:','')).to_dict())
                         
                         # drop the following two rows they are not needed for the rest of the parsing.
@@ -103,7 +103,12 @@ class TCGA_data_processor:
                         
                         # duplicate row
                         df.drop('bcr_patient_uuid',axis = 0, inplace = True)
+
+                    else:
+                        df = pd.read_csv( file , index_col = 0 , header = 0, sep='\t')
+                        df = df[~df.iloc[:,0].str.contains('_',case=False)] #drop CDE_ID and CDE header name
                     
+                    #print(df.head())
                     
                     # create dict containg headers as key and lower cased, splitted headers as values
                     self.headers_list.update ({c: prs.preprocess(c) for c in df.columns})
@@ -144,6 +149,8 @@ class TCGA_data_processor:
         # section added by Sher Lynn
         self.clinical_value_info['data_type'].replace('', np.nan, inplace = True)
         self.clinical_value_info.dropna(subset = ['data_type'], inplace = True)
+        #print(self.clinical_value_info['data_type'])
+        #print(self.clinical_value_info['data_type'].value_counts())
         # section end
         #pivot table
         self.clinical_value_info = pd.get_dummies ( self.clinical_value_info, columns = ['data_type']).set_index('public_id')
